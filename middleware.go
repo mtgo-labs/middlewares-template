@@ -2,7 +2,6 @@ package YOUR_MIDDLEWARE_NAME
 
 import (
 	"context"
-	"io"
 
 	"github.com/mtgo-labs/mtgo/tg"
 )
@@ -32,7 +31,7 @@ func New(config Config) *Middleware {
 //	client.UseInvokerMiddleware(mw.Middleware())
 func (m *Middleware) Middleware() func(next tg.Invoker) tg.Invoker {
 	return func(next tg.Invoker) tg.Invoker {
-		return tg.InvokerFunc(func(ctx context.Context, input tg.TLObject, decode func(io.Reader) (tg.TLObject, error)) (tg.TLObject, error) {
+		return tg.InvokerFunc(func(ctx context.Context, input tg.TLObject, decode func(*tg.Reader) (tg.TLObject, error)) (tg.TLObject, error) {
 			// Pre-processing: inspect input, add logging, etc.
 
 			// Call the next invoker in the chain.

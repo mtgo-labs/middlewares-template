@@ -3,7 +3,6 @@ package YOUR_MIDDLEWARE_NAME_test
 import (
 	"context"
 	"errors"
-	"io"
 	"testing"
 
 	"github.com/mtgo-labs/mtgo/tg"
@@ -11,11 +10,15 @@ import (
 )
 
 type mockInvoker struct {
-	fn func(context.Context, tg.TLObject, func(io.Reader) (tg.TLObject, error)) (tg.TLObject, error)
+	fn func(context.Context, tg.TLObject, func(*tg.Reader) (tg.TLObject, error)) (tg.TLObject, error)
 }
 
-func (m *mockInvoker) RPCInvoke(ctx context.Context, input tg.TLObject, decode func(io.Reader) (tg.TLObject, error)) (tg.TLObject, error) {
+func (m *mockInvoker) RPCInvoke(ctx context.Context, input tg.TLObject, decode func(*tg.Reader) (tg.TLObject, error)) (tg.TLObject, error) {
 	return m.fn(ctx, input, decode)
+}
+
+func (m *mockInvoker) RPCInvokeRaw(_ context.Context, _ tg.TLObject) ([]byte, error) {
+	return nil, nil
 }
 
 func TestNew(t *testing.T) {
@@ -26,7 +29,7 @@ func TestNew(t *testing.T) {
 }
 
 func TestPassthrough(t *testing.T) {
-	base := &mockInvoker{fn: func(_ context.Context, _ tg.TLObject, _ func(io.Reader) (tg.TLObject, error)) (tg.TLObject, error) {
+	base := &mockInvoker{fn: func(_ context.Context, _ tg.TLObject, _ func(*tg.Reader) (tg.TLObject, error)) (tg.TLObject, error) {
 		return nil, nil
 	}}
 
@@ -39,7 +42,7 @@ func TestPassthrough(t *testing.T) {
 
 func TestErrorPassthrough(t *testing.T) {
 	expectedErr := errors.New("test error")
-	base := &mockInvoker{fn: func(_ context.Context, _ tg.TLObject, _ func(io.Reader) (tg.TLObject, error)) (tg.TLObject, error) {
+	base := &mockInvoker{fn: func(_ context.Context, _ tg.TLObject, _ func(*tg.Reader) (tg.TLObject, error)) (tg.TLObject, error) {
 		return nil, expectedErr
 	}}
 
